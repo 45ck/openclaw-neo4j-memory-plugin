@@ -45,6 +45,12 @@ From your OpenClaw host:
 
 ```bash
 cd /path/to/openclaw
+openclaw plugins install https://github.com/45ck/openclaw-neo4j-memory-plugin.git
+```
+
+You can also install locally for dev:
+
+```bash
 git clone https://github.com/45ck/openclaw-neo4j-memory-plugin.git
 cd openclaw-neo4j-memory-plugin
 npm ci
