@@ -1,7 +1,11 @@
 # openclaw-neo4j-memory-plugin
 
 <p align="center">
-  <img src="banner.svg" alt="OpenClaw Neo4j Memory Plugin banner" width="100%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner.dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="assets/banner.light.png" />
+    <img src="assets/banner.light.png" alt="openclaw-neo4j-memory-plugin banner" width="100%" />
+  </picture>
 </p>
 
 A standalone OpenClaw plugin that stores long-term memory directly in **Neo4j** with vector recall, graph-style entity links, and auto recall/capture hooks.

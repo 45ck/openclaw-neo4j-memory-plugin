@@ -1,0 +1,24 @@
+{
+  "repo_name": "openclaw-neo4j-memory-plugin",
+  "tagline": "Graph-powered long-term memory for AI agents",
+  "one_sentence_purpose": "An OpenClaw plugin that stores and recalls agent memory in Neo4j using vector search, graph entity linking, and automatic capture hooks.",
+  "target_users": "AI agent developers using the OpenClaw framework who need persistent, graph-structured memory with vector recall",
+  "keywords": ["neo4j", "memory", "graph-database", "vector-search", "ai-agents", "openclaw"],
+  "visual_metaphors": ["a knowledge graph with glowing nodes and edges forming a brain-like network", "memory crystals stored inside interconnected graph nodes", "neural pathways branching through a graph database structure"],
+  "avoid": ["no mascots", "no photorealism", "no clip art", "no brain illustrations"],
+  "style_adjectives": ["futuristic", "connected", "luminous", "technical", "elegant"],
+  "palette_hint": {
+    "bg_light": "#ffffff",
+    "bg_dark": "#0d1117",
+    "primary": "#00A86B",
+    "accent": "#4DA6FF",
+    "ink": "#c9d1d9"
+  },
+  "assets_needed": [
+    {"path": "assets/banner.light.png", "type": "readme_banner", "desc": "Wide banner on white background with interconnected graph nodes and memory recall arrows, project name in emerald green"},
+    {"path": "assets/banner.dark.png", "type": "readme_banner", "desc": "Wide banner on dark background with glowing graph nodes and memory recall arrows, project name in emerald green"},
+    {"path": "assets/logo.light.png", "type": "square_logo", "desc": "Square logo on white background with abstract graph node cluster in green and blue"},
+    {"path": "assets/logo.dark.png", "type": "square_logo", "desc": "Square logo on dark background with glowing graph node cluster in green and blue"},
+    {"path": "assets/social-preview.png", "type": "github_social_preview", "desc": "GitHub social preview card with tagline, abstract graph network, green and blue palette"}
+  ]
+}
