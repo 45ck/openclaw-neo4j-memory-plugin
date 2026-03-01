@@ -43,7 +43,7 @@ From your CLAW host:
 
 ```bash
 cd /opt/claw
-git clone https://github.com/<your-org>/openclaw-neo4j-memory-plugin.git
+git clone https://github.com/45ck/openclaw-neo4j-memory-plugin.git
 cd openclaw-neo4j-memory-plugin
 npm ci
 npm run build
@@ -133,3 +133,4 @@ git push -u origin main
 - If vector index is unavailable, plugin falls back to full-text index text search.
 - For full graph-aware query use, extend `neo4j-client.ts` with richer Cypher traversals for your domain graph.
 - For private environments, keep Neo4j bound to private networking and do not expose Bolt directly.
+

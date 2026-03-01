@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/<your-org>/openclaw-neo4j-memory-plugin.git"
+    "url": "https://github.com/45ck/openclaw-neo4j-memory-plugin.git"
   },
   "keywords": [
     "openclaw",
@@ -47,3 +47,4 @@
     "benchmark"
   ]
 }
+
