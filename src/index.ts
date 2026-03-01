@@ -212,7 +212,7 @@ function toToolRows(rows: MemoryRow[]) {
 }
 
 const memoryPlugin = {
-  id: "neo4j-memory-plugin",
+  id: "openclaw-neo4j-memory-plugin",
   name: "Neo4j Memory",
   description: "Neo4j-backed long-term memory with graph-aware capture and recall",
   kind: "memory" as const,

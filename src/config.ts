@@ -8,6 +8,7 @@ export const EMBEDDING_DIMS: Record<string, number> = {
 
 const DEFAULT_MODEL = "text-embedding-3-small";
 const DEFAULT_EMBEDDING_PROVIDER = "disabled";
+const DEFAULT_AUTO_PROVIDER = "openrouter";
 
 function resolveEnvVars(value: string): string {
   return value.replace(/\$\{([^}]+)\}/g, (_match, envName: string) => {
@@ -37,7 +38,7 @@ export type Neo4jMemoryConfig = {
   embedding: {
     model: string;
     apiKey?: string;
-    provider: "openai" | "openrouter" | "disabled";
+    provider: "openai" | "openrouter" | "custom" | "disabled";
     apiUrl?: string;
     enabled: boolean;
   };
@@ -85,39 +86,39 @@ export const configSchema = {
     }
 
     const providerInput = typeof embeddingCfg.provider === "string" ? embeddingCfg.provider : "";
-    const provider = providerInput === "openai" || providerInput === "openrouter" || providerInput === "disabled"
-      ? providerInput
-      : hasEmbeddingConfig && typeof embeddingCfg.apiKey === "string" && embeddingCfg.apiKey.length > 0
-      ? "openai"
-      : DEFAULT_EMBEDDING_PROVIDER;
-
-    const model = typeof embeddingCfg.model === "string" ? embeddingCfg.model : DEFAULT_MODEL;
-
     const rawApiKey = typeof embeddingCfg.apiKey === "string" ? embeddingCfg.apiKey : "";
+    const model = typeof embeddingCfg.model === "string" ? embeddingCfg.model : DEFAULT_MODEL;
+    const apiUrlInput = typeof embeddingCfg.apiUrl === "string" ? embeddingCfg.apiUrl.trim() : "";
+
+    const provider =
+      providerInput === "openai" || providerInput === "openrouter" || providerInput === "custom" || providerInput === "disabled"
+        ? providerInput
+        : rawApiKey.length > 0
+          ? DEFAULT_AUTO_PROVIDER
+          : DEFAULT_EMBEDDING_PROVIDER;
+
+    const resolvedDefaultApiUrl =
+      provider === "openrouter"
+        ? "https://openrouter.ai/api/v1/embeddings"
+        : provider === "openai"
+          ? "https://api.openai.com/v1/embeddings"
+          : undefined;
+
+    const apiUrl = apiUrlInput.length > 0 ? apiUrlInput : resolvedDefaultApiUrl;
     const resolvedApiKey = rawApiKey ? resolveEnvVars(rawApiKey) : "";
-    const apiUrl =
-      typeof embeddingCfg.apiUrl === "string" && embeddingCfg.apiUrl.length > 0
-        ? embeddingCfg.apiUrl
-        : provider === "openrouter"
-          ? "https://openrouter.ai/api/v1/embeddings"
-          : provider === "openai"
-            ? "https://api.openai.com/v1/embeddings"
-            : undefined;
-
-    const explicitEnabled =
-      typeof embeddingCfg.enabled === "boolean" ? embeddingCfg.enabled : provider !== "disabled";
-    const enabled = explicitEnabled && Boolean(resolvedApiKey);
-
+    const explicitEnabled = typeof embeddingCfg.enabled === "boolean" ? embeddingCfg.enabled : provider !== "disabled";
+    const enabled = explicitEnabled && Boolean(resolvedApiKey) && Boolean(apiUrl);
     const requestedVectorDimension = hasEmbeddingConfig && typeof embeddingCfg.model === "string" ? EMBEDDING_DIMS[model] : undefined;
     const modelDimension = requestedVectorDimension ?? 1536;
 
     if (!hasEmbeddingConfig && provider !== "disabled") {
-      // Preserve backwards compatibility for existing OpenAI-centric deployments.
-      throw new Error("embedding.provider or embedding.apiKey required unless embedding disabled");
+      throw new Error("embedding.provider or embedding.apiKey required unless embedding is disabled");
     }
-
     if (provider === "disabled" && hasEmbeddingConfig && typeof embeddingCfg.enabled === "boolean" && embeddingCfg.enabled) {
       throw new Error("embedding.enabled=true requires a valid provider+apiKey");
+    }
+    if (provider === "custom" && !apiUrl) {
+      throw new Error("provider=custom requires embedding.apiUrl");
     }
 
     return {
@@ -126,10 +127,7 @@ export const configSchema = {
         username: typeof neo4j.username === "string" ? neo4j.username : "neo4j",
         password: resolveEnvVars(String(neo4j.password ?? "")),
         database: typeof neo4j.database === "string" ? neo4j.database : "neo4j",
-        vectorDimension:
-          typeof neo4j.vectorDimension === "number"
-            ? neo4j.vectorDimension
-            : modelDimension,
+        vectorDimension: typeof neo4j.vectorDimension === "number" ? neo4j.vectorDimension : modelDimension,
       },
       embedding: {
         model,
@@ -161,10 +159,14 @@ export const configSchema = {
     "neo4j.database": { label: "Neo4j Database", placeholder: "neo4j", help: "Logical database name" },
     "embedding.provider": {
       label: "Embedding Provider",
-      help: "Set to disabled to avoid embedding providers entirely",
+      help: "Set to disabled for text-only operation without external embedding APIs",
       placeholder: "disabled",
     },
-    "embedding.apiKey": { label: "Embedding API Key", sensitive: true, placeholder: "${OPENAI_API_KEY} or ${OPENROUTER_API_KEY}" },
+    "embedding.apiKey": {
+      label: "Embedding API Key",
+      sensitive: true,
+      placeholder: "${OPENROUTER_API_KEY}",
+    },
     "embedding.model": {
       label: "Embedding Model",
       placeholder: DEFAULT_MODEL,
@@ -173,9 +175,9 @@ export const configSchema = {
     "embedding.apiUrl": {
       label: "Embedding API URL",
       placeholder: "https://openrouter.ai/api/v1/embeddings",
-      help: "Optional override for embedding endpoint",
+      help: "Optional override, required only for provider=custom",
     },
-    "embedding.enabled": { label: "Embedding Enabled", help: "Set false to force text-only mode", },
+    "embedding.enabled": { label: "Embedding Enabled", help: "Set false or provider=disabled for text-only mode" },
     autoRecall: { label: "Auto Recall", help: "Inject relevant memories into context before each turn" },
     autoCapture: { label: "Auto Capture", help: "Capture important user-facing statements after turn" },
     captureMaxChars: { label: "Capture Max Chars", placeholder: "500" },
@@ -191,7 +193,12 @@ export const configSchema = {
       vectorDimension: Type.Optional(Type.Integer({ minimum: 2 })),
     }),
     embedding: Type.Object({
-      provider: Type.Optional(Type.Union([Type.Literal("openai"), Type.Literal("openrouter"), Type.Literal("disabled")])),
+      provider: Type.Optional(Type.Union([
+        Type.Literal("openai"),
+        Type.Literal("openrouter"),
+        Type.Literal("custom"),
+        Type.Literal("disabled"),
+      ])),
       model: Type.Union([
         Type.Literal("text-embedding-3-small"),
         Type.Literal("text-embedding-3-large"),
@@ -209,3 +216,4 @@ export const configSchema = {
     skipShortDuplicates: Type.Optional(Type.Boolean()),
   }),
 };
+

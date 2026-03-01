@@ -6,7 +6,7 @@ This repo is a public OSS plugin that can be installed into any OpenClaw-based s
 
 ## What this plugin provides
 
-- Plugin ID: `neo4j-memory-plugin`
+- Plugin ID: `openclaw-neo4j-memory-plugin`
 - Hooked into OpenClaw `memory` slot
 - Vector recall (`memory_recall`), explicit write (`memory_store`), and forget (`memory_forget`) tools
 - Auto recall hook on each turn via `before_agent_start`
@@ -18,7 +18,7 @@ This repo is a public OSS plugin that can be installed into any OpenClaw-based s
 
 - Neo4j 5.x (for vector index support)
 - Embedding provider credentials are optional:
-  - keep embeddings enabled with OpenAI/OpenRouter API key, or
+  - keep embeddings enabled with a compatible OpenRouter-compatible endpoint (for example `openrouter`), or
   - run in text-first mode with `embedding.provider: "disabled"` (default)
 - Node.js >= 20
 - OpenClaw runtime version that supports plugin loading (`plugins` and `plugins.slots.memory`)
@@ -64,10 +64,10 @@ Then in OpenClaw config:
 {
   "plugins": {
     "slots": {
-      "memory": "neo4j-memory-plugin"
+      "memory": "openclaw-neo4j-memory-plugin"
     },
     "entries": {
-      "neo4j-memory-plugin": {
+      "openclaw-neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {
@@ -79,7 +79,6 @@ Then in OpenClaw config:
           },
           "embedding": {
             "provider": "disabled",
-            "model": "text-embedding-3-small",
             "enabled": false
           },
           "autoRecall": true,
@@ -100,10 +99,10 @@ Example with OpenRouter embeddings (optional):
 {
   "plugins": {
     "slots": {
-      "memory": "neo4j-memory-plugin"
+      "memory": "openclaw-neo4j-memory-plugin"
     },
     "entries": {
-      "neo4j-memory-plugin": {
+      "openclaw-neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {

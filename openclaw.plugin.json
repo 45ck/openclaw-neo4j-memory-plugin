@@ -1,5 +1,5 @@
 {
-  "id": "neo4j-memory-plugin",
+  "id": "openclaw-neo4j-memory-plugin",
   "kind": "memory",
   "description": "Neo4j native memory plugin with auto-recall and auto-capture",
   "version": "0.1.0",
@@ -22,13 +22,13 @@
         "properties": {
           "provider": {
             "type": "string",
-            "enum": ["openai", "openrouter", "disabled"],
+            "enum": ["openai", "openrouter", "custom", "disabled"],
             "default": "disabled"
           },
           "model": { "type": "string", "default": "text-embedding-3-small" },
           "apiKey": { "type": "string" },
           "apiUrl": { "type": "string" },
-          "enabled": { "type": "boolean", "default": true }
+          "enabled": { "type": "boolean", "default": false }
         },
         "required": []
       },
@@ -59,13 +59,13 @@
         "properties": {
           "provider": {
             "type": "string",
-            "enum": ["openai", "openrouter", "disabled"],
+            "enum": ["openai", "openrouter", "custom", "disabled"],
             "default": "disabled"
           },
           "model": { "type": "string", "default": "text-embedding-3-small" },
           "apiKey": { "type": "string" },
           "apiUrl": { "type": "string" },
-          "enabled": { "type": "boolean", "default": true }
+          "enabled": { "type": "boolean", "default": false }
         },
         "required": []
       },
