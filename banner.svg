@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" fill="none">
+  <defs>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Decorative: graph nodes and edges -->
+  <g opacity="0.08">
+    <!-- Node cluster left -->
+    <circle cx="120" cy="120" r="12" stroke="#06b6d4" stroke-width="2"/>
+    <circle cx="200" cy="80" r="8" stroke="#06b6d4" stroke-width="2"/>
+    <circle cx="180" cy="180" r="10" stroke="#06b6d4" stroke-width="2"/>
+    <circle cx="80" cy="200" r="7" stroke="#06b6d4" stroke-width="2"/>
+    <circle cx="250" cy="150" r="9" stroke="#06b6d4" stroke-width="2"/>
+    <line x1="120" y1="120" x2="200" y2="80" stroke="#06b6d4" stroke-width="1.5"/>
+    <line x1="120" y1="120" x2="180" y2="180" stroke="#06b6d4" stroke-width="1.5"/>
+    <line x1="120" y1="120" x2="80" y2="200" stroke="#06b6d4" stroke-width="1.5"/>
+    <line x1="200" y1="80" x2="250" y2="150" stroke="#06b6d4" stroke-width="1.5"/>
+    <line x1="180" y1="180" x2="250" y2="150" stroke="#06b6d4" stroke-width="1.5"/>
+
+    <!-- Node cluster right -->
+    <circle cx="1050" cy="150" r="11" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="1100" cy="100" r="7" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="1130" cy="200" r="9" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="980" cy="120" r="8" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="1020" cy="250" r="6" stroke="#3b82f6" stroke-width="2"/>
+    <line x1="1050" y1="150" x2="1100" y2="100" stroke="#3b82f6" stroke-width="1.5"/>
+    <line x1="1050" y1="150" x2="1130" y2="200" stroke="#3b82f6" stroke-width="1.5"/>
+    <line x1="1050" y1="150" x2="980" y2="120" stroke="#3b82f6" stroke-width="1.5"/>
+    <line x1="1050" y1="150" x2="1020" y2="250" stroke="#3b82f6" stroke-width="1.5"/>
+    <line x1="1130" y1="200" x2="1020" y2="250" stroke="#3b82f6" stroke-width="1.5"/>
+  </g>
+
+  <!-- Decorative: memory/brain wave -->
+  <g opacity="0.06">
+    <path d="M 150 300 Q 250 270 350 300 Q 450 330 550 300 Q 650 270 750 300 Q 850 330 950 300 Q 1050 270 1100 300" stroke="#06b6d4" stroke-width="2" fill="none"/>
+    <path d="M 150 320 Q 250 290 350 320 Q 450 350 550 320 Q 650 290 750 320 Q 850 350 950 320 Q 1050 290 1100 320" stroke="#3b82f6" stroke-width="1.5" fill="none"/>
+  </g>
+
+  <!-- Decorative: vector dots pattern -->
+  <g opacity="0.05">
+    <circle cx="400" cy="80" r="3" fill="#06b6d4"/>
+    <circle cx="450" cy="90" r="2" fill="#3b82f6"/>
+    <circle cx="500" cy="75" r="2.5" fill="#06b6d4"/>
+    <circle cx="700" cy="85" r="2" fill="#3b82f6"/>
+    <circle cx="750" cy="95" r="3" fill="#06b6d4"/>
+    <circle cx="800" cy="78" r="2" fill="#3b82f6"/>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="165" text-anchor="middle" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="52" font-weight="bold" fill="#67e8f9">
+    OpenClaw Neo4j Memory
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="220" text-anchor="middle" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="22" fill="#8b949e">
+    Neo4j-backed long-term memory with vector recall and graph entity links
+  </text>
+
+  <!-- Accent line -->
+  <rect x="400" y="248" width="400" height="2" rx="1" fill="url(#accent)" opacity="0.4"/>
+</svg>

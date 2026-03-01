@@ -1,5 +1,9 @@
 # openclaw-neo4j-memory-plugin
 
+<p align="center">
+  <img src="banner.svg" alt="OpenClaw Neo4j Memory Plugin banner" width="100%" />
+</p>
+
 A standalone OpenClaw plugin that stores long-term memory directly in **Neo4j** with vector recall, graph-style entity links, and auto recall/capture hooks.
 
 This repo is a public OSS plugin that can be installed into any OpenClaw-based setup.
