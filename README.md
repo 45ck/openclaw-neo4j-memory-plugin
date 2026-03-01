@@ -42,7 +42,7 @@ npm run build
 From your CLAW host:
 
 ```bash
-cd /opt/claw
+cd /path/to/openclaw
 git clone https://github.com/45ck/openclaw-neo4j-memory-plugin.git
 cd openclaw-neo4j-memory-plugin
 npm ci
