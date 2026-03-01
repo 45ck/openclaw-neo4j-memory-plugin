@@ -1,5 +1,5 @@
 {
-  "id": "claw-neo4j-memory-plugin",
+  "id": "neo4j-memory-plugin",
   "kind": "memory",
   "description": "Neo4j native memory plugin with auto-recall and auto-capture",
   "version": "0.1.0",

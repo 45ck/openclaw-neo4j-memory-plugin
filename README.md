@@ -2,11 +2,11 @@
 
 A standalone OpenClaw plugin that stores long-term memory directly in **Neo4j** with vector recall, graph-style entity links, and auto recall/capture hooks.
 
-This repo is intended to be used as a public OSS plugin, installed into CLAW separately from the main platform repository.
+This repo is a public OSS plugin that can be installed into any OpenClaw-based setup.
 
 ## What this plugin provides
 
-- Plugin ID: `claw-neo4j-memory-plugin`
+- Plugin ID: `neo4j-memory-plugin`
 - Hooked into OpenClaw `memory` slot
 - Vector recall (`memory_recall`), explicit write (`memory_store`), and forget (`memory_forget`) tools
 - Auto recall hook on each turn via `before_agent_start`
@@ -39,9 +39,9 @@ npm ci
 npm run build
 ```
 
-## Use in CLAW
+## Use in OpenClaw
 
-From your CLAW host:
+From your OpenClaw host:
 
 ```bash
 cd /path/to/openclaw
@@ -52,16 +52,16 @@ npm run build
 openclaw plugins install .
 ```
 
-Then in CLAW config:
+Then in OpenClaw config:
 
 ```json
 {
   "plugins": {
     "slots": {
-      "memory": "claw-neo4j-memory-plugin"
+      "memory": "neo4j-memory-plugin"
     },
     "entries": {
-      "claw-neo4j-memory-plugin": {
+      "neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {
@@ -94,10 +94,10 @@ Example with OpenRouter embeddings (optional):
 {
   "plugins": {
     "slots": {
-      "memory": "claw-neo4j-memory-plugin"
+      "memory": "neo4j-memory-plugin"
     },
     "entries": {
-      "claw-neo4j-memory-plugin": {
+      "neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {
