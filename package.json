@@ -1,5 +1,5 @@
 {
-  "name": "@claw/openclaw-neo4j-memory-plugin",
+  "name": "@claw/neo4j-memory-plugin",
   "version": "0.1.0",
   "private": false,
   "description": "OpenClaw memory plugin backed by Neo4j",
