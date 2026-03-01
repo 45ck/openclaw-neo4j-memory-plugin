@@ -6,7 +6,7 @@ This repo is intended to be used as a public OSS plugin, installed into CLAW sep
 
 ## What this plugin provides
 
-- Plugin ID: `openclaw-neo4j-memory-plugin`
+- Plugin ID: `claw-neo4j-memory-plugin`
 - Hooked into OpenClaw `memory` slot
 - Vector recall (`memory_recall`), explicit write (`memory_store`), and forget (`memory_forget`) tools
 - Auto recall hook on each turn via `before_agent_start`
@@ -58,10 +58,10 @@ Then in CLAW config:
 {
   "plugins": {
     "slots": {
-      "memory": "openclaw-neo4j-memory-plugin"
+      "memory": "claw-neo4j-memory-plugin"
     },
     "entries": {
-      "openclaw-neo4j-memory-plugin": {
+      "claw-neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {
@@ -94,10 +94,10 @@ Example with OpenRouter embeddings (optional):
 {
   "plugins": {
     "slots": {
-      "memory": "openclaw-neo4j-memory-plugin"
+      "memory": "claw-neo4j-memory-plugin"
     },
     "entries": {
-      "openclaw-neo4j-memory-plugin": {
+      "claw-neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {
