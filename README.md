@@ -6,7 +6,7 @@ This repo is intended to be used as a public OSS plugin, installed into CLAW sep
 
 ## What this plugin provides
 
-- Plugin ID: `neo4j-memory`
+- Plugin ID: `openclaw-neo4j-memory-plugin`
 - Hooked into OpenClaw `memory` slot
 - Vector recall (`memory_recall`), explicit write (`memory_store`), and forget (`memory_forget`) tools
 - Auto recall hook on each turn via `before_agent_start`
@@ -17,7 +17,9 @@ This repo is intended to be used as a public OSS plugin, installed into CLAW sep
 ## Requirements
 
 - Neo4j 5.x (for vector index support)
-- OpenAI API key (or replace embedder implementation with local embedding model)
+- Embedding provider credentials are optional:
+  - keep embeddings enabled with OpenAI/OpenRouter API key, or
+  - run in text-first mode with `embedding.provider: "disabled"` (default)
 - Node.js >= 20
 - OpenClaw runtime version that supports plugin loading (`plugins` and `plugins.slots.memory`)
 
@@ -56,28 +58,63 @@ Then in CLAW config:
 {
   "plugins": {
     "slots": {
-      "memory": "neo4j-memory"
+      "memory": "openclaw-neo4j-memory-plugin"
     },
     "entries": {
-      "neo4j-memory": {
+      "openclaw-neo4j-memory-plugin": {
         "enabled": true,
         "config": {
           "neo4j": {
             "uri": "bolt://localhost:7687",
             "username": "neo4j",
             "password": "${NEO4J_PASSWORD}",
-            "database": "memory",
+            "database": "neo4j",
             "vectorDimension": 1536
           },
           "embedding": {
+            "provider": "disabled",
             "model": "text-embedding-3-small",
-            "apiKey": "${OPENAI_API_KEY}"
+            "enabled": false
           },
           "autoRecall": true,
           "autoCapture": true,
           "captureMaxChars": 500,
           "recallLimit": 5,
           "skipShortDuplicates": true
+        }
+      }
+    }
+  }
+}
+```
+
+Example with OpenRouter embeddings (optional):
+
+```json
+{
+  "plugins": {
+    "slots": {
+      "memory": "openclaw-neo4j-memory-plugin"
+    },
+    "entries": {
+      "openclaw-neo4j-memory-plugin": {
+        "enabled": true,
+        "config": {
+          "neo4j": {
+            "uri": "bolt://localhost:7687",
+            "username": "neo4j",
+            "password": "${NEO4J_PASSWORD}",
+            "database": "neo4j"
+          },
+          "embedding": {
+            "provider": "openrouter",
+            "apiKey": "${OPENROUTER_API_KEY}",
+            "apiUrl": "https://openrouter.ai/api/v1/embeddings",
+            "model": "text-embedding-3-small",
+            "enabled": true
+          },
+          "autoRecall": true,
+          "autoCapture": true
         }
       }
     }

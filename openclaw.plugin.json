@@ -12,7 +12,7 @@
           "uri": { "type": "string", "default": "bolt://localhost:7687" },
           "username": { "type": "string", "default": "neo4j" },
           "password": { "type": "string" },
-          "database": { "type": "string", "default": "memory" },
+          "database": { "type": "string", "default": "neo4j" },
           "vectorDimension": { "type": "number", "enum": [1536, 3072], "default": 1536 }
         },
         "required": ["uri", "username", "password"]
@@ -20,10 +20,17 @@
       "embedding": {
         "type": "object",
         "properties": {
-          "model": { "type": "string", "enum": ["text-embedding-3-small", "text-embedding-3-large"] },
-          "apiKey": { "type": "string" }
+          "provider": {
+            "type": "string",
+            "enum": ["openai", "openrouter", "disabled"],
+            "default": "disabled"
+          },
+          "model": { "type": "string", "default": "text-embedding-3-small" },
+          "apiKey": { "type": "string" },
+          "apiUrl": { "type": "string" },
+          "enabled": { "type": "boolean", "default": true }
         },
-        "required": ["apiKey"]
+        "required": []
       },
       "autoRecall": { "type": "boolean", "default": true },
       "autoCapture": { "type": "boolean", "default": true },
@@ -50,10 +57,17 @@
       "embedding": {
         "type": "object",
         "properties": {
-          "model": { "type": "string", "enum": ["text-embedding-3-small", "text-embedding-3-large"] },
-          "apiKey": { "type": "string" }
+          "provider": {
+            "type": "string",
+            "enum": ["openai", "openrouter", "disabled"],
+            "default": "disabled"
+          },
+          "model": { "type": "string", "default": "text-embedding-3-small" },
+          "apiKey": { "type": "string" },
+          "apiUrl": { "type": "string" },
+          "enabled": { "type": "boolean", "default": true }
         },
-        "required": ["apiKey"]
+        "required": []
       },
       "autoRecall": { "type": "boolean", "default": true },
       "autoCapture": { "type": "boolean", "default": true },

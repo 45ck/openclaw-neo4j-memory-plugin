@@ -1,5 +1,5 @@
-import OpenAI from "openai";
 import { Type } from "@sinclair/typebox";
+import { createHash } from "node:crypto";
 import type { Neo4jMemoryConfig } from "./config.js";
 import { EMBEDDING_DIMS, configSchema as pluginConfigSchema } from "./config.js";
 import { Neo4jMemoryStore } from "./neo4j-client.js";
@@ -104,27 +104,97 @@ function extractUserTextFromEventMessages(messages: unknown[]): string[] {
 }
 
 class Embeddings {
-  private readonly client: OpenAI;
   private readonly model: string;
+  private readonly provider: Neo4jMemoryConfig["embedding"]["provider"];
+  private readonly apiKey?: string;
+  private readonly apiUrl?: string;
+  private readonly enabled: boolean;
+  private readonly vectorDimension: number;
+  private readonly logger?: Pick<OpenClawPluginApi["logger"], "warn">;
 
-  constructor(apiKey: string, model: string) {
-    this.client = new OpenAI({ apiKey });
+  constructor(
+    provider: Neo4jMemoryConfig["embedding"]["provider"],
+    model: string,
+    apiKey: string | undefined,
+    apiUrl: string | undefined,
+    vectorDimension: number,
+    enabled: boolean,
+    logger?: Pick<OpenClawPluginApi["logger"], "warn">,
+  ) {
+    this.provider = provider;
     this.model = model;
+    this.apiKey = apiKey;
+    this.apiUrl = apiUrl;
+    this.enabled = enabled;
+    this.vectorDimension = vectorDimension;
+    this.logger = logger;
   }
 
   async embed(text: string): Promise<number[]> {
-    const result = await this.client.embeddings.create({
-      model: this.model,
-      input: text,
-    });
-
-    const [first] = result.data;
-    if (!first?.embedding) {
-      throw new Error("No embedding returned");
+    const prompt = String(text || "").trim();
+    if (!prompt || this.provider === "disabled" || !this.enabled || !this.apiKey || !this.apiUrl) {
+      return createDeterministicEmbedding(prompt, this.vectorDimension);
     }
 
-    return first.embedding as number[];
+    try {
+      const response = await fetch(this.apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+          ...(this.provider === "openrouter"
+            ? {
+                "HTTP-Referer": "https://github.com/45ck/openclaw-neo4j-memory-plugin",
+                "X-Title": "OpenClaw Neo4j Memory Plugin",
+              }
+            : {}),
+        },
+        body: JSON.stringify({ model: this.model, input: [prompt] }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`embedding request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const payload = (await response.json()) as {
+        data?: Array<{ embedding?: number[] }>;
+      };
+      const embedding = payload.data?.[0]?.embedding;
+      if (!Array.isArray(embedding) || embedding.length === 0) {
+        throw new Error("embedding response missing vector");
+      }
+
+      return embedding;
+    } catch (error) {
+      this.logger?.warn(`neo4j-memory: embedding failed, using deterministic fallback: ${String(error)}`);
+      return createDeterministicEmbedding(prompt, this.vectorDimension);
+    }
   }
+}
+
+function createDeterministicEmbedding(text: string, dimensions: number): number[] {
+  const normalized = text.trim().toLowerCase();
+  const vector = new Array<number>(Math.max(0, dimensions));
+
+  if (dimensions <= 0) return vector;
+  if (normalized.length === 0) {
+    return vector;
+  }
+
+  let normSq = 0;
+  for (let i = 0; i < dimensions; i += 1) {
+    const digest = createHash("sha256").update(`${normalized}\u0000${i}`).digest();
+    const value = (digest.readUInt32BE(0) / 0xffffffff) * 2 - 1;
+    vector[i] = value;
+    normSq += value * value;
+  }
+
+  const norm = Math.sqrt(normSq) || 1;
+  for (let i = 0; i < vector.length; i += 1) {
+    vector[i] = vector[i] / norm;
+  }
+
+  return vector;
 }
 
 function clampVectorDimensions(vector: number[], maxDims: number): number[] {
@@ -156,13 +226,23 @@ const memoryPlugin = {
 
   register(api: OpenClawPluginApi) {
     const cfg = pluginConfigSchema.parse(api.pluginConfig);
-    const embeddings = new Embeddings(cfg.embedding.apiKey, cfg.embedding.model);
-    const vectorDim = EMBEDDING_DIMS[cfg.embedding.model] ?? 1536;
+    const vectorDim = cfg.neo4j.vectorDimension ?? EMBEDDING_DIMS[cfg.embedding.model] ?? 1536;
+    const embeddings = new Embeddings(
+      cfg.embedding.provider,
+      cfg.embedding.model,
+      cfg.embedding.apiKey,
+      cfg.embedding.apiUrl,
+      vectorDim,
+      cfg.embedding.enabled,
+      api.logger,
+    );
     const db = new Neo4jMemoryStore(cfg);
 
     void db.bootstrapSchema().catch((err: unknown) => api.logger.warn(`neo4j-memory: schema bootstrap failed: ${String(err)}`));
 
-    api.logger.info(`neo4j-memory: registering plugin (db: ${cfg.neo4j.uri}, dim: ${vectorDim})`);
+    api.logger.info(
+      `neo4j-memory: registering plugin (db: ${cfg.neo4j.uri}, dim: ${vectorDim}, embedding: ${cfg.embedding.provider}, enabled: ${cfg.embedding.enabled})`,
+    );
 
     const defaultRecallLimit = Math.max(1, Math.min(cfg.recallLimit, 20));
     const captureMaxChars = cfg.captureMaxChars ?? 500;
@@ -188,7 +268,10 @@ const memoryPlugin = {
           }
 
           const vector = await embeddings.embed(query);
-          const vectorResults = await db.searchByVector(clampVectorDimensions(vector, vectorDim), limit);
+          const vectorResults =
+            cfg.embedding.enabled && cfg.embedding.provider !== "disabled"
+              ? await db.searchByVector(clampVectorDimensions(vector, vectorDim), limit)
+              : [];
           const results = vectorResults.length > 0 ? vectorResults : await db.searchByText(query, limit);
 
           if (results.length === 0) {
@@ -202,7 +285,7 @@ const memoryPlugin = {
             content: [{ type: "text", text: `Found ${results.length} memories:\n\n${toToolRows(results)}` }],
             details: {
               count: results.length,
-          memories: results.map((entry: MemoryRow) => ({
+              memories: results.map((entry: MemoryRow) => ({
                 id: entry.id,
                 category: entry.category,
                 score: entry.score,
@@ -234,7 +317,10 @@ const memoryPlugin = {
           ),
           source: Type.Optional(Type.String()),
         }),
-        async execute(_toolCallId: string, params: { text: string; importance?: number; category?: MemoryCategory; source?: string }) {
+        async execute(
+          _toolCallId: string,
+          params: { text: string; importance?: number; category?: MemoryCategory; source?: string },
+        ) {
           const text = (params.text || "").trim();
           if (!text) {
             return {
@@ -313,7 +399,10 @@ const memoryPlugin = {
           const candidates = result.slice(0, 3).map((r: MemoryRow) => ({ id: r.id, text: r.text }));
           return {
             content: [
-              { type: "text", text: "Pass memoryId to delete one of:\n" + candidates.map((c) => `- ${c.id} ${c.text}`).join("\n") },
+              {
+                type: "text",
+                text: "Pass memoryId to delete one of:\n" + candidates.map((c) => `- ${c.id} ${c.text}`).join("\n"),
+              },
             ],
             details: { action: "candidates", candidates },
           };
@@ -322,48 +411,54 @@ const memoryPlugin = {
       { name: "memory_forget" },
     );
 
-    api.registerCli(((cliApi: unknown) => {
-      const root: any = cliApi && typeof cliApi === "object" && "command" in cliApi ? cliApi : (cliApi as { program?: { command?: (...args: any[]) => any } }).program;
-      if (!root || typeof root.command !== "function") return;
+    api.registerCli(
+      ((cliApi: unknown) => {
+        const root: any =
+          cliApi && typeof cliApi === "object" && "command" in cliApi ? cliApi : (cliApi as { program?: { command?: (...args: any[]) => any } }).program;
+        if (!root || typeof root.command !== "function") return;
 
-      const memories = root.command("ltm").description("Neo4j memory plugin commands");
+        const memories = root.command("ltm").description("Neo4j memory plugin commands");
 
-      memories
-        .command("stats")
-        .description("Show memory totals")
-        .action(async () => {
-          const stats = await db.getStats();
-          console.log(`Total memories: ${stats.total}`);
-          for (const [category, count] of Object.entries(stats.byCategory)) {
-            console.log(`- ${category}: ${count}`);
-          }
-        });
+        memories
+          .command("stats")
+          .description("Show memory totals")
+          .action(async () => {
+            const stats = await db.getStats();
+            console.log(`Total memories: ${stats.total}`);
+            for (const [category, count] of Object.entries(stats.byCategory)) {
+              console.log(`- ${category}: ${count}`);
+            }
+          });
 
-      memories
-        .command("list")
-        .description("List latest memories")
-        .option("--limit <n>", "max rows", "10")
-        .action(async (opts: { limit?: string }) => {
-          const limit = Number(opts.limit || 10);
-          const rows = await db.listRecent(limit);
-          console.log(
-            rows
-              .map((row) => `${row.id} | ${row.eventAt} | ${row.category} | ${row.text.slice(0, 120)}`)
-              .join("\n"),
-          );
-        });
+        memories
+          .command("list")
+          .description("List latest memories")
+          .option("--limit <n>", "max rows", "10")
+          .action(async (opts: { limit?: string }) => {
+            const limit = Number(opts.limit || 10);
+            const rows = await db.listRecent(limit);
+            console.log(
+              rows
+                .map((row) => `${row.id} | ${row.eventAt} | ${row.category} | ${row.text.slice(0, 120)}`)
+                .join("\n"),
+            );
+          });
 
-      memories
-        .command("search")
-        .description("Search memories")
-        .argument("<query>", "search text")
-        .option("--limit <n>", "max rows", "10")
-        .action(async (query: string, opts: { limit?: string }) => {
-          const limit = Number(opts.limit || 10);
-          const rows = await db.searchByText(query, limit);
-          console.log(JSON.stringify(rows.map((r: MemoryRow) => ({ id: r.id, category: r.category, score: r.score, text: r.text })), null, 2));
-        });
-    }) as unknown as (...args: any[]) => void, { commands: ["ltm"] });
+        memories
+          .command("search")
+          .description("Search memories")
+          .argument("<query>", "search text")
+          .option("--limit <n>", "max rows", "10")
+          .action(async (query: string, opts: { limit?: string }) => {
+            const limit = Number(opts.limit || 10);
+            const rows = await db.searchByText(query, limit);
+            console.log(
+              JSON.stringify(rows.map((r: MemoryRow) => ({ id: r.id, category: r.category, score: r.score, text: r.text })), null, 2),
+            );
+          });
+      }) as unknown as (...args: any[]) => void,
+      { commands: ["ltm"] },
+    );
 
     if (cfg.autoRecall) {
       api.on("before_agent_start", async (...args: unknown[]) => {
@@ -373,7 +468,10 @@ const memoryPlugin = {
 
         try {
           const vector = await embeddings.embed(prompt);
-          let rows = await db.searchByVector(clampVectorDimensions(vector, vectorDim), defaultRecallLimit);
+          let rows =
+            cfg.embedding.enabled && cfg.embedding.provider !== "disabled"
+              ? await db.searchByVector(clampVectorDimensions(vector, vectorDim), defaultRecallLimit)
+              : [];
           if (rows.length === 0) {
             rows = await db.searchByText(prompt, defaultRecallLimit);
           }

@@ -31,6 +31,10 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+function toNeo4jLimit(value: number): neo4j.Integer {
+  return neo4j.int(Math.max(1, Math.floor(Number(value) || 1)));
+}
+
 export class Neo4jMemoryStore {
   private readonly driver: neo4j.Driver;
   private readonly db: string;
@@ -99,7 +103,7 @@ export class Neo4jMemoryStore {
           `CALL db.index.fulltext.queryNodes('${MEMORY_INDEX_TEXT}', $query) YIELD node, score RETURN node, score LIMIT $limit`,
           {
             query: queryText,
-            limit: Number(limit),
+            limit: toNeo4jLimit(limit),
           },
         );
         return result.records
@@ -107,7 +111,7 @@ export class Neo4jMemoryStore {
       } catch (_err) {
         const fallback = await s.run(
           `MATCH (m:${MEMORY_NODE_LABEL}) WHERE toLower(m.text) CONTAINS toLower($queryText) RETURN m AS node LIMIT $limit`,
-          { queryText, limit: Number(limit) },
+          { queryText, limit: toNeo4jLimit(limit) },
         );
         return fallback.records.map((record) => this.hydrateRecord({ node: record.get("node"), score: 1 }));
       }
@@ -122,7 +126,7 @@ export class Neo4jMemoryStore {
       const result = await s.run(
         `CALL db.index.vector.queryNodes('${MEMORY_INDEX_VECTOR}', $limit, $vector) YIELD node, score RETURN node, score`,
         {
-          limit: Number(limit),
+          limit: toNeo4jLimit(limit),
           vector: queryVector,
         },
       );
@@ -233,7 +237,7 @@ export class Neo4jMemoryStore {
     try {
       const result = await s.run(
         `MATCH (m:${MEMORY_NODE_LABEL}) RETURN m AS node ORDER BY m.eventAt DESC LIMIT $limit`,
-        { limit: Number(limit) },
+        { limit: toNeo4jLimit(limit) },
       );
       return result.records.map((record) => this.hydrateRecord({ node: record.get("node"), score: 1 }));
     } finally {
