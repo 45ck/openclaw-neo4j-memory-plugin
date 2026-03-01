@@ -1,0 +1,2 @@
+{"id":"t-001","question":"What happened first: project kickoff or model migration?","expected":["project kickoff","model migration"],"category":"temporal"}
+{"id":"t-002","question":"What was the latest memory about Neo4j credential rotation?","expected":["Neo4j","rotation"],"category":"temporal"}

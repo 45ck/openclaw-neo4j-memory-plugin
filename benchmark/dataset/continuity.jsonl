@@ -1,0 +1,2 @@
+{"id":"ct-001","question":"What are the active blockers for continuity right now?","expected":["aws write load","Neo4j dedupe"],"category":"continuity"}
+{"id":"ct-002","question":"Which plugin gives best temporal reasoning for long memory?","expected":["neo4j-memory"],"category":"continuity"}

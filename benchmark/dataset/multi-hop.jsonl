@@ -1,0 +1,3 @@
+{"id":"mh-001","question":"Who leads the project and where is the timeline stored?","expected":["Project lead Alice","timeline stored in workspace/memory/roadmap.md"],"category":"multi-hop"}
+{"id":"mh-002","question":"What fact links personal notes with finance and location?","expected":["personal notes","finance","location"],"category":"multi-hop"}
+{"id":"mh-003","question":"Which session mentioned an issue with vector dedupe and what was the fix?","expected":["neo4j","dedupe"],"category":"multi-hop"}

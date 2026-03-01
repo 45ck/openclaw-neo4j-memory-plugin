@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "moduleDetection": "force",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist-benchmark",
+    "rootDir": "benchmark",
+    "declaration": false,
+    "noEmitOnError": true,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["benchmark/**/*"]
+}

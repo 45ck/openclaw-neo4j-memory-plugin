@@ -1,0 +1,2 @@
+{"id":"c-001","question":"Do we trust all data as of today?","expected":["trust","contradiction"],"category":"contradiction"}
+{"id":"c-002","question":"Was model migration completed before or after telemetry hardening?","expected":["before","after","telemetry"],"category":"contradiction"}

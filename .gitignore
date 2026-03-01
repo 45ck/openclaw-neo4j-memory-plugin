@@ -1,0 +1,7 @@
+dist
+dist-benchmark
+node_modules
+tmp
+coverage
+/.idea
+.DS_Store

@@ -1,0 +1,49 @@
+{
+  "name": "@claw/openclaw-neo4j-memory-plugin",
+  "version": "0.1.0",
+  "private": false,
+  "description": "OpenClaw memory plugin backed by Neo4j",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/<your-org>/openclaw-neo4j-memory-plugin.git"
+  },
+  "keywords": [
+    "openclaw",
+    "neo4j",
+    "memory",
+    "plugin",
+    "graph"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build:src && npm run build:benchmark",
+    "build:src": "tsc -p tsconfig.json",
+    "build:benchmark": "tsc -p tsconfig.benchmark.json",
+    "start": "node dist/index.js",
+    "benchmark": "node dist-benchmark/run-benchmark.js"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "0.34.48",
+    "neo4j-driver": "^5.26.0",
+    "openai": "^4.82.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "openclaw": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE",
+    "benchmark"
+  ]
+}
